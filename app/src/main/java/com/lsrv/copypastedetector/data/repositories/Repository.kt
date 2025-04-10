@@ -1,8 +1,11 @@
-package com.lsrv.copypastedetector.data.source
+package com.lsrv.copypastedetector.data.repositories
+
+import androidx.compose.runtime.snapshots.SnapshotStateList
 
 interface Repository<T> {
+    suspend fun refresh()
     suspend fun get(id: Int): T
-    suspend fun getAll(): MutableList<T>
+    suspend fun getAll(): SnapshotStateList<T>
     suspend fun insert(item: T)
     suspend fun insertAll(vararg items: T)
     suspend fun delete(id: Int)
