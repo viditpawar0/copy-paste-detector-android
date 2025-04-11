@@ -13,6 +13,9 @@ import com.lsrv.copypastedetector.data.repositories.SessionRepository
 import com.lsrv.copypastedetector.data.entities.Snippet
 import com.lsrv.copypastedetector.data.repositories.SnippetRepository
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 class MainScreenViewModel(
     private val snippetRepository: SnippetRepository,
@@ -22,6 +25,9 @@ class MainScreenViewModel(
     lateinit var sessions: SnapshotStateList<Session>
     var isRefreshing by mutableStateOf(false)
     var selectedSession by mutableIntStateOf(0)
+    var newSessionDialogOpen by mutableStateOf(false)
+    @OptIn(ExperimentalTime::class)
+    var newSessionDialogUiState by mutableStateOf(NewSessionDialogUiState("", Clock.System.now()))
     init {
         viewModelScope.launch {
             snippets = snippetRepository.getAll()
@@ -40,4 +46,14 @@ class MainScreenViewModel(
     fun closeDrawer(drawerState: DrawerState) {
         viewModelScope.launch { drawerState.close() }
     }
+    fun addSession(session: Session) {
+        viewModelScope.launch {
+            sessionRepository.insert(session)
+        }
+    }
 }
+
+data class NewSessionDialogUiState @OptIn(ExperimentalTime::class) constructor(
+    val sessionNameInput: String,
+    val sessionEndsAtInput: Instant
+)

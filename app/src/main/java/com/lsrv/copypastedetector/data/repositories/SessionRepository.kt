@@ -32,7 +32,7 @@ class SessionRepository(
         TODO("Not yet implemented")
     }
 
-    override suspend fun insert(item: Session) {
-        TODO("Not yet implemented")
+    override suspend fun insert(item: Session) : Long {
+        return sessionNetworkDatasource.insert(item)
     }
 }

@@ -12,7 +12,7 @@ import java.time.Instant
 @Entity(tableName = "sessions")
 data class Session(
     @PrimaryKey
-    val id: Long,
+    val id: Long? = null,
     val name: String,
     @Serializable(with = InstantSerializer::class)
     val endsAt: Instant,

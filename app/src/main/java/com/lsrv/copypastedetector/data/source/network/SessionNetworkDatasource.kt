@@ -6,7 +6,11 @@ import com.lsrv.copypastedetector.data.entities.Session
 import com.lsrv.copypastedetector.data.source.network.serverresources.SessionResource
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.plugins.resources.get
+import io.ktor.client.plugins.resources.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import kotlinx.serialization.json.Json
 
 class SessionNetworkDatasource(
@@ -19,8 +23,12 @@ class SessionNetworkDatasource(
         sessions.addAll(Json.decodeFromString<List<Session>>(client.get(SessionResource()).body()))
     }
 
-    override suspend fun insert(t: Session) {
-//        TODO("Not yet implemented")
+    override suspend fun insert(t: Session) : Long {
+        client.post(Session) {
+            setBody(t)
+        }.let {
+            return (it.body() as Session).id?:throw ServerResponseException(it, it.bodyAsText())
+        }
     }
 
     override suspend fun update(t: Session) {

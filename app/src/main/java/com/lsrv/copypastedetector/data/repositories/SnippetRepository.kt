@@ -23,8 +23,8 @@ class SnippetRepository(
         return snippetNetworkDatasource.getAll()
     }
 
-    override suspend fun insert(item: Snippet) {
-//        TODO("Not yet implemented")
+    override suspend fun insert(item: Snippet): Long {
+        return snippetNetworkDatasource.insert(item)
     }
 
     override suspend fun insertAll(vararg items: Snippet) {

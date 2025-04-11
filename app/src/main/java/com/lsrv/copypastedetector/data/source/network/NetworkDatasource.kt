@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 
 interface NetworkDatasource<T> {
     suspend fun refresh()
-    suspend fun insert(t: T)
+    suspend fun insert(t: T): Long
     suspend fun update(t: T)
     suspend fun delete(t: T)
     suspend fun get(id: Int): T
