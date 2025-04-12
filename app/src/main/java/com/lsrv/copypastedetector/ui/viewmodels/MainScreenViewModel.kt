@@ -1,11 +1,11 @@
 package com.lsrv.copypastedetector.ui.viewmodels
 
-import androidx.compose.material3.DrawerState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lsrv.copypastedetector.data.entities.Session
@@ -13,9 +13,6 @@ import com.lsrv.copypastedetector.data.repositories.SessionRepository
 import com.lsrv.copypastedetector.data.entities.Snippet
 import com.lsrv.copypastedetector.data.repositories.SnippetRepository
 import kotlinx.coroutines.launch
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 class MainScreenViewModel(
     private val snippetRepository: SnippetRepository,
@@ -25,9 +22,8 @@ class MainScreenViewModel(
     lateinit var sessions: SnapshotStateList<Session>
     var isRefreshing by mutableStateOf(false)
     var selectedSession by mutableIntStateOf(0)
-    var newSessionDialogOpen by mutableStateOf(false)
-    @OptIn(ExperimentalTime::class)
-    var newSessionDialogUiState by mutableStateOf(NewSessionDialogUiState("", Clock.System.now()))
+    var newSessionDialogUiState by mutableStateOf(NewSessionDialogUiState("", false))
+    var newSessionCreatedDialogUiState by mutableStateOf(NewSessionCreatedDialogUiState(-1, false))
     init {
         viewModelScope.launch {
             snippets = snippetRepository.getAll()
@@ -43,17 +39,25 @@ class MainScreenViewModel(
             isRefreshing = false
         }
     }
-    fun closeDrawer(drawerState: DrawerState) {
-        viewModelScope.launch { drawerState.close() }
-    }
-    fun addSession(session: Session) {
+    fun createSession(session: Session) {
         viewModelScope.launch {
-            sessionRepository.insert(session)
+            val newSessionId = sessionRepository.insert(session)
+            sessionRepository.getAll().add(session.copy(id = newSessionId))
+            newSessionDialogUiState = newSessionDialogUiState.copy(open = false)
+            newSessionCreatedDialogUiState = newSessionCreatedDialogUiState.copy(
+                newSessionId = newSessionId,
+                open = true
+            )
         }
     }
 }
 
-data class NewSessionDialogUiState @OptIn(ExperimentalTime::class) constructor(
+data class NewSessionDialogUiState(
     val sessionNameInput: String,
-    val sessionEndsAtInput: Instant
+    val open: Boolean
+)
+
+data class NewSessionCreatedDialogUiState(
+    val newSessionId: Long,
+    val open: Boolean
 )

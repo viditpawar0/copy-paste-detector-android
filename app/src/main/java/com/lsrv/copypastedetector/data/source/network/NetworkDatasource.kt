@@ -8,6 +8,6 @@ interface NetworkDatasource<T> {
     suspend fun insert(t: T): Long
     suspend fun update(t: T)
     suspend fun delete(t: T)
-    suspend fun get(id: Int): T
+    suspend fun get(id: Long): T
     fun getAll(): SnapshotStateList<T>
 }

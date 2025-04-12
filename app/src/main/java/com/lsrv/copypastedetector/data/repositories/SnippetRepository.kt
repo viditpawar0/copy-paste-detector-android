@@ -15,7 +15,7 @@ class SnippetRepository(
     override suspend fun refresh() {
         snippetNetworkDatasource.refresh()
     }
-    override suspend fun get(id: Int): Snippet {
+    override suspend fun get(id: Long): Snippet {
         return snippetNetworkDatasource.get(id)
     }
 

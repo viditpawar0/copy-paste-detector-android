@@ -9,6 +9,7 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.plugins.resources.get
 import io.ktor.client.plugins.resources.post
+import io.ktor.client.request.header
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import kotlinx.serialization.json.Json
@@ -24,7 +25,8 @@ class SessionNetworkDatasource(
     }
 
     override suspend fun insert(t: Session) : Long {
-        client.post(Session) {
+        client.post(SessionResource()) {
+            header("Content-Type", "application/json")
             setBody(t)
         }.let {
             return (it.body() as Session).id?:throw ServerResponseException(it, it.bodyAsText())
@@ -39,7 +41,7 @@ class SessionNetworkDatasource(
 //        TODO("Not yet implemented")
     }
 
-    override suspend fun get(id: Int): Session {
+    override suspend fun get(id: Long): Session {
         return Json.decodeFromString<Session>(client.get(SessionResource.Id(2)).body())
     }
 

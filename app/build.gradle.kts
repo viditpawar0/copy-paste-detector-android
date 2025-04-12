@@ -120,4 +120,8 @@ dependencies {
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.resources)
     implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.client.content.negotiation)
+
+    //datastore
+    implementation(libs.androidx.datastore.preferences)
 }

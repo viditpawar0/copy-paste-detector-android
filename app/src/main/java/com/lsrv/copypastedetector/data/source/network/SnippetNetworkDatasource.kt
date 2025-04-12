@@ -23,7 +23,7 @@ class SnippetNetworkDatasource(
     }
 
     override suspend fun insert(t: Snippet): Long {
-        return (client.post(t) {
+        return (client.post(SnippetResource()) {
             setBody(t)
         }.body() as Snippet).id
     }
@@ -36,7 +36,7 @@ class SnippetNetworkDatasource(
 //        TODO("Not yet implemented")
     }
 
-    override suspend fun get(id: Int): Snippet {
+    override suspend fun get(id: Long): Snippet {
         return Json.decodeFromString<Snippet>(client.get(SnippetResource.Id(2)).body())
     }
 
