@@ -9,14 +9,14 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.lsrv.copypastedetector.data.entities.Session
+import com.lsrv.copypastedetector.data.source.local.dao.LocalSessionDao
 import com.lsrv.copypastedetector.data.source.local.dao.LocalSnippetDao
 import com.lsrv.copypastedetector.data.source.network.SessionNetworkDatasource
-import kotlinx.coroutines.flow.all
 import kotlinx.coroutines.flow.map
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "sessionIds")
 class SessionRepository(
-    private val localSessionDao: LocalSnippetDao,
+    private val localSessionDao: LocalSessionDao,
     private val sessionNetworkDatasource: SessionNetworkDatasource,
     private val dataStore: DataStore<Preferences>
 ): Repository<Session> {
@@ -42,22 +42,22 @@ class SessionRepository(
         TODO("Incomplete")
     }
 
-    override suspend fun delete(id: Int) {
+    override suspend fun delete(t: Session) {
+        sessionNetworkDatasource.delete(t)
+    }
+
+    override suspend fun update(t: Session) {
+        sessionNetworkDatasource.update(t)
+    }
+
+    override suspend fun insertAll(vararg t: Session) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun update(id: Int, item: Session) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun insertAll(vararg items: Session) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun insert(item: Session) : Long {
-        val result = sessionNetworkDatasource.insert(item)
+    override suspend fun insert(t: Session) : Long {
+        val result = sessionNetworkDatasource.insert(t)
         dataStore.edit {
-            it[longPreferencesKey(item.id.toString())] = item.id?:-1
+            it[longPreferencesKey(t.id.toString())] = t.id?:-1
         }
         return result
     }

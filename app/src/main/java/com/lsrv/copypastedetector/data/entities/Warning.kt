@@ -6,15 +6,15 @@ import com.lsrv.copypastedetector.domain.InstantSerializer
 import kotlinx.serialization.Serializable
 import java.time.Instant
 
-@Entity(tableName = "snippets")
+@Entity(tableName = "warnings")
 @Serializable
-data class Snippet(
-    @PrimaryKey val id: Long? = null,
-    val content: String,
-    val type: Type,
+data class Warning(
+    @PrimaryKey val id: Long?,
+    val text: String,
     val clientName: String,
+    val severity: Severity,
     @Serializable(with = InstantSerializer::class)
     val createdAt: Instant
 ) {
-    enum class Type { COPIED, PASTED }
+    enum class Severity { LOW, MEDIUM, HIGH }
 }
