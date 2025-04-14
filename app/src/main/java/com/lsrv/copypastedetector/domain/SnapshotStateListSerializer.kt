@@ -7,7 +7,7 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-class SnapshotStateListSerializer<T>(private val dataSerializer: KSerializer<T>) : KSerializer<SnapshotStateList<T>> {
+class SnapshotStateListSerializer<T>(dataSerializer: KSerializer<T>) : KSerializer<SnapshotStateList<T>> {
 
     private val listSerializer = ListSerializer(dataSerializer)
 

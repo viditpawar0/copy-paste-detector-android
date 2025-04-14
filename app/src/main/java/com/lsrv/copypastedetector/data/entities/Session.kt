@@ -17,5 +17,7 @@ data class Session(
     @Serializable(with = InstantSerializer::class)
     val endsAt: Instant,
     @Serializable(with = SnapshotStateListSerializer::class)
-    val snippets: SnapshotStateList<Snippet>
+    val snippets: SnapshotStateList<Snippet>,
+    @Serializable(with = SnapshotStateListSerializer::class)
+    val warnings: SnapshotStateList<Warning>
 )

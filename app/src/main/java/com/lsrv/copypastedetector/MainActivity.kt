@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
                                 SnippetNetworkDatasource((application as CopyPasteDetectorApplication).client)
                             ),
                             SessionRepository(
-                                (application as CopyPasteDetectorApplication).db.snippetDao(),
+                                (application as CopyPasteDetectorApplication).db.sessionDao(),
                                 SessionNetworkDatasource((application as CopyPasteDetectorApplication).client),
                                 dataStore
                             )

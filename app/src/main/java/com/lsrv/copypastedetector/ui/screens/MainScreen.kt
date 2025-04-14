@@ -200,6 +200,7 @@ fun MainScreen(
                                             ),
                                         ).atZone(ZoneId.systemDefault()).toInstant(),
                                         snippets = mutableStateListOf(),
+                                        warnings = mutableStateListOf()
                                     ),
                                 )
                             },
@@ -228,7 +229,6 @@ fun MainScreen(
                             textAlign = TextAlign.Center
                         )
                     }
-
                 }
             }
         }
