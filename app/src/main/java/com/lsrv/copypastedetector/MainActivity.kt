@@ -8,8 +8,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.lsrv.copypastedetector.data.repositories.SessionRepository
 import com.lsrv.copypastedetector.data.repositories.SnippetRepository
+import com.lsrv.copypastedetector.data.repositories.WarningRepository
 import com.lsrv.copypastedetector.data.source.network.SessionNetworkDatasource
 import com.lsrv.copypastedetector.data.source.network.SnippetNetworkDatasource
+import com.lsrv.copypastedetector.data.source.network.WarningNetworkDatasource
 import com.lsrv.copypastedetector.ui.screens.MainScreen
 import com.lsrv.copypastedetector.ui.viewmodels.MainScreenViewModel
 
@@ -22,15 +24,19 @@ class MainActivity : ComponentActivity() {
                 viewModel = viewModel(factory = viewModelFactory {
                     addInitializer(MainScreenViewModel::class) {
                         MainScreenViewModel(
+                            SessionRepository(
+                                (application as CopyPasteDetectorApplication).db.sessionDao(),
+                                SessionNetworkDatasource((application as CopyPasteDetectorApplication).client),
+                                dataStore,
+                            ),
                             SnippetRepository(
                                 (application as CopyPasteDetectorApplication).db.snippetDao(),
                                 SnippetNetworkDatasource((application as CopyPasteDetectorApplication).client)
                             ),
-                            SessionRepository(
-                                (application as CopyPasteDetectorApplication).db.sessionDao(),
-                                SessionNetworkDatasource((application as CopyPasteDetectorApplication).client),
-                                dataStore
-                            )
+                            WarningRepository(
+                                (application as CopyPasteDetectorApplication).db.warningDao(),
+                                WarningNetworkDatasource((application as CopyPasteDetectorApplication).client)
+                            ),
                         )
                     }
                 })
