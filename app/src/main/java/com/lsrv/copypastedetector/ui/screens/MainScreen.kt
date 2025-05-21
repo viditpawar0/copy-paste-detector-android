@@ -11,8 +11,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -22,10 +22,11 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -35,18 +36,28 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.ui.Modifier
-import com.lsrv.copypastedetector.ui.theme.CopyPasteDetectorTheme
-import com.lsrv.copypastedetector.ui.viewmodels.MainScreenViewModel
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.lsrv.copypastedetector.data.entities.Session
+import com.lsrv.copypastedetector.ui.theme.CopyPasteDetectorTheme
+import com.lsrv.copypastedetector.ui.viewmodels.MainScreenViewModel
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -64,6 +75,11 @@ fun MainScreen(
         val sessions = viewModel.sessions
         val scope = rememberCoroutineScope()
         val drawerState = rememberDrawerState(DrawerValue.Closed)
+        val topLevelRoutes = listOf(
+            TopLevelRoute("Snippets", SnippetsDestination, Icons.Default.Menu),
+            TopLevelRoute("Warnings", WarningsDestination, Icons.Default.Warning)
+        )
+        val navController = rememberNavController()
         ModalNavigationDrawer(
             drawerState = drawerState,
             modifier = Modifier.fillMaxSize(),
@@ -87,7 +103,6 @@ fun MainScreen(
                         ) {
                             items(sessions.size) {
                                 val session = sessions[it]
-                                println(session)
                                 NavigationDrawerItem(
                                     label = { Text(session.name) },
                                     onClick = {
@@ -109,7 +124,7 @@ fun MainScreen(
                 topBar = {
                     CenterAlignedTopAppBar(
                         title = {
-                            Text(if (viewModel.sessions.size > 0) viewModel.sessions[viewModel.selectedSession].name else "Snippets")
+                            Text(if (viewModel.sessions.size > 0) "${viewModel.sessions[viewModel.selectedSession].id}:${viewModel.sessions[viewModel.selectedSession].name}" else "Copy Paste Detector")
                         },
                         navigationIcon = {
                             IconButton({scope.launch { drawerState.open() }}) {
@@ -119,12 +134,25 @@ fun MainScreen(
                     )
                 },
                 bottomBar = {
-                    BottomAppBar {
-                        Text(
-                            if (viewModel.sessions.size > 0) "Session ID:${viewModel.sessions[viewModel.selectedSession].id.toString()}" else "",
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                    NavigationBar {
+                        val navBackStackEntry by navController.currentBackStackEntryAsState()
+                        val currentDestination = navBackStackEntry?.destination
+                        topLevelRoutes.forEach{route ->
+                            NavigationBarItem(
+                                icon = { Icon(route.icon, route.name) },
+                                label = { Text(route.name) },
+                                selected = currentDestination?.hierarchy?.any{it.hasRoute(route.route::class)}?:false,
+                                onClick = {
+                                    navController.navigate(route.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
+                            )
+                        }
                     }
                 },
                 floatingActionButton = {
@@ -135,28 +163,9 @@ fun MainScreen(
                     ) { Icon(Icons.Default.Add, "Create Session") }
                 }
             ) { innerPadding ->
-                PullToRefreshBox(
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize(),
-                    isRefreshing = viewModel.isRefreshing,
-                    onRefresh = {viewModel.refreshSessions()}
-
-                ) {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(snippets.size) {
-                            val snippet = snippets[it]
-                            ListItem(
-                                headlineContent = { Text(snippet.clientName) },
-                                supportingContent = { Text(snippet.content) },
-                                overlineContent = { Text(snippet.type.toString()) },
-                            )
-                            println(snippet)
-                            HorizontalDivider()
-                        }
-                    }
+                NavHost(navController, SnippetsDestination, Modifier.padding(innerPadding)) {
+                    composable<SnippetsDestination> { SnippetsScreen(viewModel) }
+                    composable<WarningsDestination> { WarningsScreen(viewModel)  }
                 }
             }
         }
@@ -184,9 +193,7 @@ fun MainScreen(
                             modifier = Modifier.fillMaxWidth(),
                             style = MaterialTheme.typography.labelMedium
                         )
-                        TimePicker(
-                            timePickerState,
-                        )
+                        TimePicker(timePickerState)
                         Button(
                             {
                                 viewModel.createSession(
@@ -234,3 +241,16 @@ fun MainScreen(
         }
     }
 }
+
+
+data class TopLevelRoute<T: Any>(
+    val name: String,
+    val route: T,
+    val icon: ImageVector,
+)
+
+@Serializable
+object SnippetsDestination
+
+@Serializable
+object WarningsDestination
