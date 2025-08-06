@@ -33,6 +33,7 @@ class MainScreenViewModel(
             sessions = sessionRepository.getAll()
             warnings = warningRepository.getAll()
         }
+        snippetRepository.enableLiveUpdates()
     }
     fun refreshSessions() {
         viewModelScope.launch {

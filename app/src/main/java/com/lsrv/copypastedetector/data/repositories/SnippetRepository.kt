@@ -9,12 +9,11 @@ import com.lsrv.copypastedetector.data.source.network.SnippetNetworkDatasource
 class SnippetRepository(
     private val localSnippetDao: LocalSnippetDao,
     private val snippetNetworkDatasource: SnippetNetworkDatasource
-): Repository<Snippet> {
-    val snippets = mutableStateListOf<Snippet>()
-
+): LiveRepository<Snippet> {
     override suspend fun refresh() {
         snippetNetworkDatasource.refresh()
     }
+
     override suspend fun get(id: Long): Snippet {
         return snippetNetworkDatasource.get(id)
     }
@@ -37,5 +36,13 @@ class SnippetRepository(
 
     override suspend fun update(t: Snippet) {
         snippetNetworkDatasource.update(t)
+    }
+
+    override fun enableLiveUpdates() {
+        snippetNetworkDatasource.enableLiveUpdates()
+    }
+
+    override fun disableLiveUpdates() {
+        snippetNetworkDatasource.disableLiveUpdates()
     }
 }

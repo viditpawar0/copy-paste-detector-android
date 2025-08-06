@@ -9,12 +9,12 @@ plugins {
 
 android {
     namespace = "com.lsrv.copypastedetector"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.lsrv.copypastedetector"
         minSdk = 34
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -128,4 +128,8 @@ dependencies {
     //navigation
     implementation(libs.androidx.navigation.compose)
 
+    //stomp client
+    implementation("com.github.NaikSoftware:StompProtocolAndroid:1.6.6")
+
+    implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
 }

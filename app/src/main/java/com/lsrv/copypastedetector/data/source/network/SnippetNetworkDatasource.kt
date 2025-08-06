@@ -1,7 +1,9 @@
 package com.lsrv.copypastedetector.data.source.network
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.lsrv.copypastedetector.BuildConfig
 import com.lsrv.copypastedetector.data.entities.Snippet
 import com.lsrv.copypastedetector.data.source.network.serverresources.SnippetResource
 import io.ktor.client.HttpClient
@@ -16,10 +18,15 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.serialization.json.Json
+import org.json.JSONObject
+import org.json.JSONTokener
+import ua.naiksoftware.stomp.Stomp
+import ua.naiksoftware.stomp.dto.LifecycleEvent
 
 class SnippetNetworkDatasource(
     private val client: HttpClient
-): NetworkDatasource<Snippet> {
+): LiveNetworkDatasource<Snippet> {
+    private val stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, "${BuildConfig.SERVER_BASE_URL}/ws")
     private val snippets = mutableStateListOf<Snippet>()
 
     override suspend fun refresh() {
@@ -59,5 +66,22 @@ class SnippetNetworkDatasource(
 
     override fun getAll(): SnapshotStateList<Snippet> {
         return snippets
+    }
+
+    override fun enableLiveUpdates() {
+        stompClient.connect()
+        stompClient.lifecycle().subscribe {
+            if (it.type == LifecycleEvent.Type.OPENED) {
+                stompClient.topic("/topic/snippets").subscribe{
+                    snippets.add(Json.decodeFromString<Snippet>((JSONTokener(it.payload).nextValue() as JSONObject).getString("body")))
+                }
+            } else if (it.type == LifecycleEvent.Type.ERROR) {
+                throw it.exception
+            }
+        }
+    }
+
+    override fun disableLiveUpdates() {
+        stompClient.disconnect()
     }
 }

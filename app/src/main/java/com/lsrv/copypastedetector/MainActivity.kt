@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
             MainScreen(
                 viewModel = viewModel(factory = viewModelFactory {
                     addInitializer(MainScreenViewModel::class) {
-                        MainScreenViewModel(
+                        val mainScreenViewModel = MainScreenViewModel(
                             SessionRepository(
                                 (application as CopyPasteDetectorApplication).db.sessionDao(),
                                 SessionNetworkDatasource((application as CopyPasteDetectorApplication).client),
@@ -38,6 +38,8 @@ class MainActivity : ComponentActivity() {
                                 WarningNetworkDatasource((application as CopyPasteDetectorApplication).client)
                             ),
                         )
+                        mainScreenViewModel.refreshSessions()
+                        mainScreenViewModel
                     }
                 })
             )

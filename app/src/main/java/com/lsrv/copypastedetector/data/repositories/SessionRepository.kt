@@ -1,20 +1,16 @@
 package com.lsrv.copypastedetector.data.repositories
 
-import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import com.lsrv.copypastedetector.data.entities.Session
 import com.lsrv.copypastedetector.data.source.local.dao.LocalSessionDao
-import com.lsrv.copypastedetector.data.source.local.dao.LocalSnippetDao
 import com.lsrv.copypastedetector.data.source.network.SessionNetworkDatasource
 import kotlinx.coroutines.flow.map
 
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "sessionIds")
 class SessionRepository(
     private val localSessionDao: LocalSessionDao,
     private val sessionNetworkDatasource: SessionNetworkDatasource,
@@ -56,9 +52,9 @@ class SessionRepository(
 
     override suspend fun insert(t: Session) : Long {
         val result = sessionNetworkDatasource.insert(t)
-        dataStore.edit {
-            it[longPreferencesKey(t.id.toString())] = t.id?:-1
-        }
+//        dataStore.edit {
+//            it[longPreferencesKey(t.id.toString())] = t.id?:-1
+//        }
         return result
     }
 }
