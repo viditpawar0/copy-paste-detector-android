@@ -2,6 +2,8 @@ package com.lsrv.copypastedetector.data.source.network
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.lsrv.copypastedetector.BuildConfig
+import com.lsrv.copypastedetector.data.entities.Snippet
 import com.lsrv.copypastedetector.data.entities.Warning
 import com.lsrv.copypastedetector.data.source.network.serverresources.WarningResource
 import io.ktor.client.HttpClient
@@ -16,11 +18,16 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import kotlinx.serialization.json.Json
+import org.json.JSONObject
+import org.json.JSONTokener
+import ua.naiksoftware.stomp.Stomp
+import ua.naiksoftware.stomp.dto.LifecycleEvent
 
 class WarningNetworkDatasource(
     private val client: HttpClient
-) : NetworkDatasource<Warning> {
+) : LiveNetworkDatasource<Warning> {
     private val warnings = mutableStateListOf<Warning>()
+    private val stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, "${BuildConfig.SERVER_BASE_URL}/ws")
 
     override suspend fun refresh() {
         warnings.clear()
@@ -62,5 +69,22 @@ class WarningNetworkDatasource(
 
     override fun getAll(): SnapshotStateList<Warning> {
         return warnings
+    }
+
+    override fun enableLiveUpdates() {
+        stompClient.connect()
+        stompClient.lifecycle().subscribe {
+            if (it.type == LifecycleEvent.Type.OPENED) {
+                stompClient.topic("/topic/warnings").subscribe{
+                    warnings.add(Json.decodeFromString<Warning>((JSONTokener(it.payload).nextValue() as JSONObject).getString("body")))
+                }
+            } else if (it.type == LifecycleEvent.Type.ERROR) {
+                throw it.exception
+            }
+        }
+    }
+
+    override fun disableLiveUpdates() {
+        stompClient.disconnect()
     }
 }

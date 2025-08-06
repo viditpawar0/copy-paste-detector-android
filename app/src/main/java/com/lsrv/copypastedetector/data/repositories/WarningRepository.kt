@@ -8,7 +8,7 @@ import com.lsrv.copypastedetector.data.source.network.WarningNetworkDatasource
 class WarningRepository(
     private val localWarningDao: LocalWarningDao,
     private val warningNetworkDatasource: WarningNetworkDatasource
-) : Repository<Warning> {
+) : LiveRepository<Warning> {
 
     override suspend fun refresh() {
         warningNetworkDatasource.refresh()
@@ -36,5 +36,13 @@ class WarningRepository(
 
     override suspend fun update(t: Warning) {
         warningNetworkDatasource.update(t)
+    }
+
+    override fun enableLiveUpdates() {
+        warningNetworkDatasource.enableLiveUpdates()
+    }
+
+    override fun disableLiveUpdates() {
+        warningNetworkDatasource.disableLiveUpdates()
     }
 }

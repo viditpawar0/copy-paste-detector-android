@@ -34,6 +34,7 @@ class MainScreenViewModel(
             warnings = warningRepository.getAll()
         }
         snippetRepository.enableLiveUpdates()
+        warningRepository.enableLiveUpdates()
     }
     fun refreshSessions() {
         viewModelScope.launch {
